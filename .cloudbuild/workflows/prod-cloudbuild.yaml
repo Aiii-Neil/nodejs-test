@@ -1,0 +1,40 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - "--no-cache"
+      - "--platform"
+      - "linux/amd64"
+      - "-t"
+      - "$_GCR_HOSTNAME/$PROJECT_ID/$_MODE/$_SERVICE_NAME:$TAG_NAME"
+      - .
+      - "-f"
+      - Dockerfile
+    id: Build
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - "$_GCR_HOSTNAME/$PROJECT_ID/$_MODE/$_SERVICE_NAME:$TAG_NAME"
+    id: Push
+  - name: "gcr.io/cloud-builders/kubectl"
+    args:
+      - "apply"
+      - "-f"
+      - "workflows/prod-deployment.yaml"
+    env:
+      - "CLOUDSDK_COMPUTE_REGION=asia-east1"
+      - "CLOUDSDK_CONTAINER_CLUSTER=aiii-pay-cluster"
+    id: Deploy
+images:
+  - "$_GCR_HOSTNAME/$PROJECT_ID/$_MODE/$_SERVICE_NAME:$TAG_NAME"
+options:
+  substitutionOption: ALLOW_LOOSE
+substitutions:
+  _PLATFORM: managed
+  _SERVICE_NAME: template-api-gke
+  _DEPLOY_REGION: asia-east1
+  _GCR_HOSTNAME: asia-east1-docker.pkg.dev
+  _MODE: product
+tags:
+  - gcp-cloud-build-deploy-gke
+  - $_SERVICE_NAME

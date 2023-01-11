@@ -1,0 +1,88 @@
+name: Build and Deploy to GKE
+
+'on':
+  push:
+    tags:
+      - 'v*'
+
+env:
+  PROJECT_ID: aiii-core
+  GAR_LOCATION: asia-east1
+  GKE_CLUSTER: aiii-pay-cluster
+  GKE_ZONE: asia-east1
+  DEPLOYMENT_NAME: template-api-gke
+  REPOSITORY: product
+  IMAGE: template-api-gke
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Get Tag Name & Set env
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_GKE_KEY_AIII_CORE }}
+        export_default_credentials: true
+
+    - name: Set Configure Docker
+      run: gcloud auth configure-docker asia-east1-docker.pkg.dev
+
+    # Get the GKE credentials, so we can deploy to the cluster
+    - name: Set up GKE credentials
+      uses: google-github-actions/get-gke-credentials@v0
+      with:
+        cluster_name: ${{ env.GKE_CLUSTER }}
+        location: ${{ env.GKE_ZONE }}
+
+    - name: 'get-pods' # 列出 pods , 主要用來判斷是否有取得 GKE 權限
+      run: 'kubectl get pods'
+
+    - name: Update index.ts version
+      run: 'sed -i -e "s/RELEASE_VERSION/${{ env.RELEASE_VERSION }}/g" $(find -type f -name *.ts )'
+
+    - name: Server CI and Build
+      run: npm i --force && npm run build
+
+    - name: Test
+      run: npm run test
+
+    - name: Docker Build Image
+      run: docker build -t asia-east1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ env.RELEASE_VERSION }} -t asia-east1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest .
+
+    - name: Docker Push Image
+      run: docker push asia-east1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }} --all-tags
+
+    - name: Update deployment.yaml Tag
+      run:  'sed -i -e "s/\(:\)[0-9\.]\{1,\}\(\"\)/\1${{ env.RELEASE_VERSION }}\2/g" ./.kube/prod-deployment.yaml'
+
+    - name: Deploy To GKE
+      run: 'kubectl config use-context ${{ secrets.GCP_AIII_CORE_GKE_CONTEXT_NAME }} && kubectl apply -f ./.kube/prod-deployment.yaml'
+
+    - name: LINE Notify
+      if: always()
+      run: |
+          curl --location --request POST 'https://notify-api.line.me/api/notify' \
+          --header 'Authorization: Bearer ${{ secrets.LINE_NOTIFY_TOKEN }}' \
+          --header 'Content-Type: application/x-www-form-urlencoded' \
+          --data-urlencode 'message=Repository ${{ github.repository }}@${{ env.RELEASE_VERSION }} - Deploy to GKE (projectId: ${{ env.PROJECT_ID }}, cluster: ${{ env.GKE_CLUSTER }}, service: ${{ env.DEPLOYMENT_NAME }}, region: asia-east1) - ${{job.status}}'
+
+    # - name: Slack Notify
+    #   if: always()
+    #   run: |
+    #       curl --location --request POST 'https://hooks.slack.com/workflows/${{ secrets.SLACK_NOTIFY_WORKFLOWS_PATH }}' \
+    #       --header 'Content-Type: application/json' \
+    #       --data-raw '{ "message": "Repository ${{ github.repository }}@${{ env.RELEASE_VERSION }} - Deploy to GKE (projectId: ${{ env.PROJECT_ID }}, cluster: ${{ env.GKE_CLUSTER }}, service: ${{ env.DEPLOYMENT_NAME }}, region: asia-east1) - ${{job.status}}" }'
