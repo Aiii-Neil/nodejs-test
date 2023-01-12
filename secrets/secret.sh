@@ -1,6 +1,5 @@
 ABS_PATH=$(pwd)
 export INTERNAL_API_KEY=AIzaSyBzhcGkiS-SBWDSc4UF4mqeYKxLZ6SvZyA
-export GOOGLE_APPLICATION_CREDENTIALS=$ABS_PATH/secrets/aiii-developer-firebase.json
 export APIs_api=https://api-v2-5uvz3vc6ga-de.a.run.app
 export APIs_platformPush=https://platform-push-v1-5uvz3vc6ga-de.a.run.app
 export APIs_platformPushAudienceClient=https://platform-push-audience-client-5uvz3vc6ga-de.a.run.app

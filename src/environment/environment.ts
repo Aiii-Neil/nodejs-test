@@ -14,7 +14,7 @@ export const commonEnv = {
     ],
     couponOnline: process.env.APIs_couponOnline,
     recommendation: process.env.APIs_recommendation,
-    membership : process.env.APIs_membership,
+    membership: process.env.APIs_membership
   },
   internalUrl: process.env.Internal_url,
   GKE: {
