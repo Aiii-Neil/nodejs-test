@@ -37,3 +37,18 @@ export const demo = async (exportMode: 'all' | 'us' | 'tw') => {
       };
   }
 };
+
+export const getLineUserInfo = async (req: any): Promise<any> => {
+  const usFirestore = await getUsFirestore();
+  const doc = await usFirestore
+    .collection('lineUsers')
+    .where('userId', '==', req.body.userId)
+    .get();
+
+  const data = {
+    name: doc.docs[0].data().displayName,
+    phone: doc.docs[0].data().members.linePhone
+  };
+
+  return data;
+};

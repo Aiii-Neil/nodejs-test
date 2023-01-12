@@ -5,6 +5,7 @@ import { auth } from './middlewares/auth';
 import 'express-async-errors'; // 讓非同步API也可以抓到throw的錯誤
 import { errorHandler } from './middlewares/error-handler';
 import { apiDemo } from './functions/api-demo';
+import { getUserInfo } from './functions/getUserInfo';
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -21,12 +22,10 @@ app.get('/', (__, res) => {
   res.send('OK');
 });
 
-// TODO 請將以下的demoRouter改成所需的路由名稱
-//!!!!!!取用此template，請將demo相關內容移除，並建立自己所需的基礎Router!!!!!!!!
-const demoRouter = express.Router();
-app.use('/template-api-gke', demoRouter);
+const router = express.Router();
+app.use('/nodejs-practice', router);
 
-demoRouter.get('/', (__, res) => {
+router.get('/', (__, res) => {
   res.send('OK');
 });
 
@@ -34,7 +33,9 @@ demoRouter.get('/', (__, res) => {
 app.use(auth);
 
 //!!!!!!取用此template，請將demo相關內容移除!!!!!!!!
-demoRouter.post('/demo', apiDemo);
+router.post('/demo', apiDemo);
+
+router.post('/getUserInfo', getUserInfo);
 
 //錯誤處理器，需擺在所有方法最後面
 app.use(errorHandler);
