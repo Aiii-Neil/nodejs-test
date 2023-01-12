@@ -7,6 +7,7 @@ import { errorHandler } from './middlewares/error-handler';
 import { apiDemo } from './functions/api-demo';
 import { getUserInfo } from './functions/getUserInfo';
 import { getCountyList } from './functions/getCountyList';
+import { getActivityInfo } from './functions/getActivityInfo';
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -37,6 +38,8 @@ app.use(auth);
 router.post('/demo', apiDemo);
 
 router.post('/getUserInfo', getUserInfo);
+
+router.post('/getActivityInfo', getActivityInfo);
 
 router.get('/getCountyList', getCountyList);
 

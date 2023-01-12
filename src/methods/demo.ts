@@ -53,6 +53,18 @@ export const getLineUserInfo = async (req: any): Promise<any> => {
   return data;
 };
 
+export const getActivityDetail = async (req: any): Promise<any> => {
+  const usFirestore = await getUsFirestore();
+  const doc = await usFirestore
+    .collection('sites')
+    .doc(req.body.sites)
+    .collection('activity')
+    .where('title', '==', req.body.title)
+    .get();
+
+  return doc.docs[0].data();
+};
+
 export const getCountyArray = async (): Promise<any> => {
   const countyArray = [
     { county: '台北市', value: '0' },
