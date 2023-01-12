@@ -52,3 +52,34 @@ export const getLineUserInfo = async (req: any): Promise<any> => {
 
   return data;
 };
+
+export const getCountyArray = async (): Promise<any> => {
+  const countyArray = [
+    { county: '台北市', value: '0' },
+    { county: '基隆市', value: '1' },
+    { county: '新北市', value: '2' },
+    { county: '宜蘭縣', value: '3' },
+    { county: '新竹縣市', value: '4' },
+    { county: '桃園縣', value: '5' },
+    { county: '苗栗縣', value: '6' },
+    { county: '台中市', value: '7' },
+    { county: '彰化縣', value: '8' },
+    { county: '南投縣', value: '9' },
+    { county: '嘉義縣', value: '10' },
+    { county: '雲林縣', value: '11' },
+    { county: '台南市', value: '12' },
+    { county: '高雄市', value: '13' },
+    { county: '澎湖縣', value: '14' },
+    { county: '屏東縣', value: '15' },
+    { county: '台東縣', value: '16' },
+    { county: '花蓮縣', value: '17' },
+    { county: '金門縣', value: '18' },
+    { county: '花蓮縣', value: '19' },
+    { county: '澎湖縣', value: '20' },
+    { county: '連江縣', value: '21' },
+    { county: '南海諸島', value: '22' },
+    { county: '釣魚台列嶼', value: '23' }
+  ];
+
+  return countyArray;
+};

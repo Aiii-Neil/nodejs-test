@@ -6,6 +6,7 @@ import 'express-async-errors'; // 讓非同步API也可以抓到throw的錯誤
 import { errorHandler } from './middlewares/error-handler';
 import { apiDemo } from './functions/api-demo';
 import { getUserInfo } from './functions/getUserInfo';
+import { getCountyList } from './functions/getCountyList';
 
 const app = express();
 app.use(cors({ origin: true }));
@@ -36,6 +37,8 @@ app.use(auth);
 router.post('/demo', apiDemo);
 
 router.post('/getUserInfo', getUserInfo);
+
+router.get('/getCountyList', getCountyList);
 
 //錯誤處理器，需擺在所有方法最後面
 app.use(errorHandler);
